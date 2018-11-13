@@ -150,8 +150,10 @@ namespace PingPong_client {
 
                             //stream.Read(rdata, 0, 20);
                             Render.RenderGame();
+                            Array.Clear(rdata, 0, rdata.Length);
                             serverSocket.Receive(rdata);
                             string nickOpponent = Encoding.Default.GetString(rdata);
+                            Helper.DeleteSpaces(ref nickOpponent);
                             Render.RenderStatisticZone(nickName, nickOpponent, 0, 0);
 
                             break;

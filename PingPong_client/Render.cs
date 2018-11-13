@@ -10,6 +10,7 @@ namespace PingPong_client {
         private static int startTop = Helper.origRow + 5;
         private static int offsetLeft = 3;
         private static int offsetTop = 1;
+        private static int countInfo = 0;
         public static void ShowList(List<SessionInfo> sessions) {
             RenderRedWelcomeZone();
             if (sessions.Count == 0) {
@@ -132,7 +133,6 @@ namespace PingPong_client {
                 }
             }
         }
-
         public static void RenderStatisticZone(string leftName, string rightName, int pointLeft, int pointRight) {
             Console.BackgroundColor = ConsoleColor.Blue;
             Console.ForegroundColor = ConsoleColor.White;
@@ -149,6 +149,30 @@ namespace PingPong_client {
 
             Helper.WriteAt(pointLeft.ToString(), 69, 5);
             Helper.WriteAt(pointRight.ToString(), 89, 5);
+        }
+        public static void RenderError(string error) {
+            Console.BackgroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.White;
+            Helper.WriteAt(error, ConsoleSettings.widthConsole / 2 - error.Length, ConsoleSettings.heightConsole / 2);
+        }
+        public static void RenderError() {
+            Console.BackgroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.White;
+            Helper.WriteAt("Error", ConsoleSettings.widthConsole / 2, ConsoleSettings.heightConsole / 2);
+        }
+        public static void RenderStatisticInfo(string str) {
+            Console.BackgroundColor = ConsoleColor.Blue;
+            Console.ForegroundColor = ConsoleColor.White;
+            Helper.WriteAt(str, 3, 7 + countInfo);
+            countInfo++;
+        }
+        public static void RenderStartPosion() {
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Console.ForegroundColor = ConsoleColor.White;
+
+            Helper.WriteAt("|", 0, 11);
+            Helper.WriteAt("|", 59, 11);
+            Helper.WriteAt("0", 29, 11);
         }
     }
 }

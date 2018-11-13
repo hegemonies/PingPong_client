@@ -6,3 +6,6 @@ c:\users\даниил\documents\visual studio 2015\Projects\PingPong_client\Ping
 C:\Users\Даниил\Source\Repos\PingPong_client\PingPong_client\bin\Debug\PingPong_client.exe.config
 C:\Users\Даниил\Source\Repos\PingPong_client\PingPong_client\obj\Debug\PingPong_client.exe
 C:\Users\Даниил\Source\Repos\PingPong_client\PingPong_client\obj\Debug\PingPong_client.pdb
+C:\Users\Даниил\Source\Repos\PingPong_client\PingPong_client\bin\Debug\PingPong_client.exe
+C:\Users\Даниил\Source\Repos\PingPong_client\PingPong_client\bin\Debug\PingPong_client.pdb
+C:\Users\Даниил\Source\Repos\PingPong_client\PingPong_client\obj\Debug\PingPong_client.csprojResolveAssemblyReference.cache
