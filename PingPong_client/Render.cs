@@ -119,7 +119,7 @@ namespace PingPong_client {
                 }
             }
 
-            Console.BackgroundColor = ConsoleColor.DarkMagenta;
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
 
             // Filling the chat input area
             for (int i = ConsoleSettings.heightConsole - 1; i < ConsoleSettings.heightConsole; i++) {
@@ -132,6 +132,21 @@ namespace PingPong_client {
                     Helper.WriteAt(" ", j, i);
                 }
             }
+        }
+        public static void RenderGame(int posLeftRacket, int posRightRacket, int[] posBall) {
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Console.ForegroundColor = ConsoleColor.White;
+            
+            for (int i = Helper.origRow; i < ConsoleSettings.heightGame; i++) {
+                Console.SetCursorPosition(Helper.origCol, i);
+                for (int j = Helper.origCol; j < ConsoleSettings.widthGame; j++) {
+                    Console.Write(" ");
+                }
+            }
+
+            Helper.WriteAt("|", 0, posLeftRacket);
+            Helper.WriteAt("|", 59, posRightRacket);
+            Helper.WriteAt("@", posBall[0], posBall[1]);
         }
         public static void RenderStatisticZone(string leftName, string rightName, int pointLeft, int pointRight) {
             Console.BackgroundColor = ConsoleColor.Blue;

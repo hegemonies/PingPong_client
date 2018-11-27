@@ -39,7 +39,7 @@ namespace PingPong_client {
                     Console.Write(welcomeEnter);
                     nickName = Console.ReadLine();
                 } while (nickName == "");
-
+                
                 serverSocket.Send(Encoding.Default.GetBytes(nickName));
 
                 NetworkStream stream = new NetworkStream(serverSocket);
@@ -62,7 +62,7 @@ namespace PingPong_client {
                 //Console.WriteLine(rdata);
 
                 string str_rdata = Encoding.Default.GetString(rdata);
-                Helper.DeleteSpaces(ref str_rdata);
+                str_rdata = Helper.DeleteSpaces(str_rdata);
                 //Console.WriteLine("rdata: " + str_rdata + '.');
                 string[] req;
 
@@ -87,7 +87,7 @@ namespace PingPong_client {
                     //game func
                 } else {
                     string tmp = Encoding.Default.GetString(rdata);
-                    Helper.DeleteSpaces(ref tmp);
+                    tmp = Helper.DeleteSpaces(tmp);
                     //Helper.WriteAt(tmp + ".", 0, 0);
                     req = tmp.Split(';');
 
@@ -103,25 +103,28 @@ namespace PingPong_client {
                     Console.SetCursorPosition(13, 34);
                     Console.Write("\t\t\t\t\t\t");
                     Console.SetCursorPosition(13, 34);
-                    Console.Write("Choose a session or create your game (-cr): ");
+                    Console.Write("Choose a session (-cr to create game -r to reload list): ");
                     string answer = "";
                     do {
                         answer = Console.ReadLine();
                     } while (answer == "");
 
                     if (answer == "-cr") {
+                        Render.RenderRedWelcomeZone();
                         Array.Clear(sdata, 0, sdata.Length);
                         sdata = Encoding.Default.GetBytes("CREATEGAME");
                         stream.Write(sdata, 0, sdata.Length);
-                        Render.RenderGame();
                         Console.BackgroundColor = ConsoleColor.DarkBlue;
                         Helper.WriteAt("Waiting opponent...", 30, 2);
                         Array.Clear(rdata, 0, rdata.Length);
                         //stream.Read(rdata, 0, 20);
                         serverSocket.Receive(rdata);
+                        Render.RenderGame();
                         string nickOpponent = Encoding.Default.GetString(rdata);
+                        nickOpponent = Helper.DeleteSpaces(nickOpponent);
                         Render.RenderStatisticZone(nickName, nickOpponent, 0, 0);
-                        //game func
+                        var GR = new GameRules(serverSocket, StartPosition.Left);
+                        GR.Start();
                         break;
                     } else if (answer == "-r") {
                         Array.Clear(sdata, 0, sdata.Length);
@@ -132,7 +135,7 @@ namespace PingPong_client {
                         stream.Read(rdata, 0, 1150);
 
                         str_rdata = Encoding.Default.GetString(rdata);
-                        Helper.DeleteSpaces(ref str_rdata);
+                        str_rdata = Helper.DeleteSpaces(str_rdata);
 
                         req = Encoding.Default.GetString(rdata).Split(';');
                         ParseGameList(req);
@@ -153,8 +156,12 @@ namespace PingPong_client {
                             Array.Clear(rdata, 0, rdata.Length);
                             serverSocket.Receive(rdata);
                             string nickOpponent = Encoding.Default.GetString(rdata);
-                            Helper.DeleteSpaces(ref nickOpponent);
+                            nickOpponent = Helper.DeleteSpaces(nickOpponent);
+
                             Render.RenderStatisticZone(nickName, nickOpponent, 0, 0);
+
+                            var GR = new GameRules(serverSocket, StartPosition.Right);
+                            GR.Start();
 
                             break;
                         }
@@ -179,6 +186,9 @@ namespace PingPong_client {
         private static void ParseGameList(string[] strs) {
             foreach (string str in strs) {
                 string[] substr = str.Split(',');
+                if (substr.Length < 1) {
+                    return;
+                }
                 SessionStatus status = SessionStatus.Free;
                 if (substr[3] == "Free") {
                     status = SessionStatus.Free;
