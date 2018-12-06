@@ -21,6 +21,12 @@ namespace PingPong_client {
         public string toString() {
             return nickNameLeft + " " + nickNameRight + " " + GID + " " + status;
         }
+
+        public void change(string nameLeft, string nameRight, SessionStatus status) {
+            nickNameLeft = nameLeft;
+            nickNameRight = nameRight;
+            this.status = status;            
+        }
     }
 
     enum SessionStatus {

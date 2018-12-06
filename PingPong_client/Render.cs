@@ -137,12 +137,31 @@ namespace PingPong_client {
             Console.BackgroundColor = ConsoleColor.DarkBlue;
             Console.ForegroundColor = ConsoleColor.White;
             
-            for (int i = Helper.origRow; i < ConsoleSettings.heightGame; i++) {
+            for (int i = Helper.origRow; i < ConsoleSettings.heightGame - 1; i++) {
                 Console.SetCursorPosition(Helper.origCol, i);
                 for (int j = Helper.origCol; j < ConsoleSettings.widthGame; j++) {
                     Console.Write(" ");
                 }
             }
+
+            Helper.WriteAt("|", 0, posLeftRacket);
+            Helper.WriteAt("|", 59, posRightRacket);
+            Helper.WriteAt("@", posBall[0], posBall[1]);
+        }
+        public static void FastRenderGame(int posLeftRacket, int posRightRacket, int[] posBall, int oldPosLeft, int oldPosRight, int[] oldPosBall) {
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Console.ForegroundColor = ConsoleColor.White;
+
+            Console.SetCursorPosition(0, 0);
+            for (int i = 0; i < ConsoleSettings.heightGame - 1; i++) {
+                Console.WriteLine(" ");
+            }
+            
+            for (int i = 0; i < ConsoleSettings.heightGame - 1; i++) {
+                Helper.WriteAt(" ", 59, i);
+            }
+
+            Helper.WriteAt(" ", oldPosBall[0], oldPosBall[1]);
 
             Helper.WriteAt("|", 0, posLeftRacket);
             Helper.WriteAt("|", 59, posRightRacket);
@@ -155,13 +174,19 @@ namespace PingPong_client {
             if (leftName.Length > 18) {
                 leftName = "Such a big boy";
             } else if (rightName.Length > 18) {
-                rightName = "-.-";
+                rightName = "kto toot";
             }
 
             Helper.WriteAt(leftName, ConsoleSettings.widthGame + 2, 2);
             Helper.WriteAt("-", 79, 2);
             Helper.WriteAt(rightName, ConsoleSettings.widthGame + 22, 2);
 
+            Helper.WriteAt(pointLeft.ToString(), 69, 5);
+            Helper.WriteAt(pointRight.ToString(), 89, 5);
+        }
+        public static void RenderStatistic(int pointLeft, int pointRight) {
+            Console.BackgroundColor = ConsoleColor.Blue;
+            Console.ForegroundColor = ConsoleColor.White;
             Helper.WriteAt(pointLeft.ToString(), 69, 5);
             Helper.WriteAt(pointRight.ToString(), 89, 5);
         }
@@ -178,7 +203,7 @@ namespace PingPong_client {
         public static void RenderStatisticInfo(string str) {
             Console.BackgroundColor = ConsoleColor.Blue;
             Console.ForegroundColor = ConsoleColor.White;
-            Helper.WriteAt(str, 3, 7 + countInfo);
+            Helper.WriteAt(str, 69, 7 + countInfo);
             countInfo++;
         }
         public static void RenderStartPosion() {
@@ -188,6 +213,11 @@ namespace PingPong_client {
             Helper.WriteAt("|", 0, 11);
             Helper.WriteAt("|", 59, 11);
             Helper.WriteAt("0", 29, 11);
+        }
+        public static void RenderTime(int time) {
+            Console.BackgroundColor = ConsoleColor.Blue;
+            Console.ForegroundColor = ConsoleColor.White;
+            Helper.WriteAt(time.ToString(), 79, 0);
         }
     }
 }

@@ -24,8 +24,8 @@ namespace PingPong_client {
                 Console.SetCursorPosition(origCol + x, origRow + y);
                 Console.Write(s);
             } catch (ArgumentOutOfRangeException e) {
-                Console.Clear();
-                Console.WriteLine(e.Message);
+                //Console.Clear();
+                //Console.WriteLine(e.Message);
             }
         }
     }

@@ -85,6 +85,15 @@ namespace PingPong_client {
                     stream.Write(sdata, 0, sdata.Length);
                     Thread.Sleep(2000);
                     //game func
+                    Render.RenderRedWelcomeZone();
+                    Array.Clear(rdata, 0, rdata.Length);
+                    serverSocket.Receive(rdata);
+                    Render.RenderGame();
+                    string nickOpponent = Encoding.Default.GetString(rdata);
+                    nickOpponent = Helper.DeleteSpaces(nickOpponent);
+                    Render.RenderStatisticZone(nickName, nickOpponent, 0, 0);
+                    var GR = new GameRules(serverSocket, StartPosition.Left);
+                    GR.Start();
                 } else {
                     string tmp = Encoding.Default.GetString(rdata);
                     tmp = Helper.DeleteSpaces(tmp);
@@ -136,6 +145,7 @@ namespace PingPong_client {
 
                         str_rdata = Encoding.Default.GetString(rdata);
                         str_rdata = Helper.DeleteSpaces(str_rdata);
+                        //Console.WriteLine("rdata: " + str_rdata + '.');
 
                         req = Encoding.Default.GetString(rdata).Split(';');
                         ParseGameList(req);
@@ -150,15 +160,14 @@ namespace PingPong_client {
                             Array.Clear(sdata, 0, sdata.Length);
                             sdata = Encoding.Default.GetBytes("GOGAME;" + GID);
                             stream.Write(sdata, 0, sdata.Length);
-
-                            //stream.Read(rdata, 0, 20);
+                            
                             Render.RenderGame();
                             Array.Clear(rdata, 0, rdata.Length);
                             serverSocket.Receive(rdata);
                             string nickOpponent = Encoding.Default.GetString(rdata);
                             nickOpponent = Helper.DeleteSpaces(nickOpponent);
 
-                            Render.RenderStatisticZone(nickName, nickOpponent, 0, 0);
+                            Render.RenderStatisticZone(nickOpponent, nickName, 0, 0);
 
                             var GR = new GameRules(serverSocket, StartPosition.Right);
                             GR.Start();
@@ -185,19 +194,29 @@ namespace PingPong_client {
         }
         private static void ParseGameList(string[] strs) {
             foreach (string str in strs) {
-                string[] substr = str.Split(',');
+                string tstr = Helper.DeleteSpaces(str);
+                string[] substr = tstr.Split(',');
+
                 if (substr.Length < 1) {
                     return;
                 }
+
                 SessionStatus status = SessionStatus.Free;
-                if (substr[3] == "Free") {
-                    status = SessionStatus.Free;
-                }
+                int tmpGID = int.Parse(substr[2]);
+
                 if (substr[3] == "Busy") {
                     status = SessionStatus.Busy;
                 }
-                if (!ExistSession(int.Parse(substr[2]))) {
+
+                if (!ExistSession(tmpGID)) {
                     sessions.Add(new SessionInfo(substr[0], substr[1], Int32.Parse(substr[2]), status));
+                } else {
+                    foreach (SessionInfo session in sessions) {
+                        if (session.GID == tmpGID) {
+                            session.change(substr[0], substr[1], status);
+                        }
+                    }
+
                 }
             }
         }
