@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Media;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -12,7 +13,7 @@ namespace PingPong_client {
         Socket serverSocket;
         byte[] sendBuffer = new byte[2];
         byte[] recvBuffer = new byte[22];
-        int interval = 500;
+        int interval = 400;
         int posLeftRacket = 11;
         int posRightRacket = 11;
         int oldPosLeftRacket = 11;
@@ -25,10 +26,12 @@ namespace PingPong_client {
         StartPosition startPosition;
         bool runGame = true;
         int time = 0;
+        SoundPlayer sound = new SoundPlayer(@"scream.wav");
 
         public GameRules(Socket serverSocket, StartPosition startPosition) {
             this.serverSocket = serverSocket;
             this.startPosition = startPosition;
+            sound.Load();
         }
 
         public void Start() {
@@ -60,6 +63,7 @@ namespace PingPong_client {
 
         private void PlayHandler() {
             Mutex mutex = new Mutex();
+            Render.RenderStatisticInfo("Start");
             while (runGame) {
                 //if (scoreLeft < 5 && scoreRight < 5) {
                 //    break;
@@ -172,13 +176,13 @@ namespace PingPong_client {
                         if (startPosition == StartPosition.Left) {
                             //posRightRacket = int.Parse(raws[2]);
                             int tmp = int.Parse(raws[2]);
-                            if (tmp < 24 || tmp >= 0) {
+                            if (tmp < 24 && tmp >= 0) {
                                 posRightRacket = tmp;
                             }
                         } else {
                             //posLeftRacket = int.Parse(raws[1]);
                             int tmp = int.Parse(raws[1]);
-                            if (tmp < 24 || tmp >= 0) {
+                            if (tmp < 24 && tmp >= 0) {
                                 posLeftRacket = int.Parse(raws[1]);
                             }
                         }
@@ -188,6 +192,13 @@ namespace PingPong_client {
                         oldPosBall[1] = posBall[1];
                         posBall[0] = int.Parse(strPosBall[0]);
                         posBall[1] = int.Parse(strPosBall[1]);
+
+                        if (oldPosBall[0] == 58 & posBall[0] == 57) {
+                            sound.Play();
+                        } else if (oldPosBall[0] == 1 & posBall[0] == 2) {
+                            sound.Play();
+                        }
+
                         string[] strScores = raws[4].Split(',');
                         scoreLeft = int.Parse(strScores[0]);
                         scoreRight = int.Parse(strScores[1]);

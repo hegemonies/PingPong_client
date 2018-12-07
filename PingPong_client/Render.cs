@@ -187,6 +187,7 @@ namespace PingPong_client {
         public static void RenderStatistic(int pointLeft, int pointRight) {
             Console.BackgroundColor = ConsoleColor.Blue;
             Console.ForegroundColor = ConsoleColor.White;
+            Helper.WriteAt("\t\t\t\t\t", 62, 5);
             Helper.WriteAt(pointLeft.ToString(), 69, 5);
             Helper.WriteAt(pointRight.ToString(), 89, 5);
         }

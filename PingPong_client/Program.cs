@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Media;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -79,13 +80,12 @@ namespace PingPong_client {
                 } else if (str_rdata == "EMPTY") {
                     Render.RenderRedWelcomeZone();
                     Helper.WriteAt("Welcome! You are the first player", 30, 5);
-                    Helper.WriteAt("Create the game...", 30, 6);
+                    Helper.WriteAt("Creating the game...", 30, 6);
                     Array.Clear(sdata, 0, sdata.Length);
                     sdata = Encoding.Default.GetBytes("CREATEGAME");
                     stream.Write(sdata, 0, sdata.Length);
                     Thread.Sleep(2000);
-                    //game func
-                    Render.RenderRedWelcomeZone();
+                    //Render.RenderRedWelcomeZone();
                     Array.Clear(rdata, 0, rdata.Length);
                     serverSocket.Receive(rdata);
                     Render.RenderGame();
