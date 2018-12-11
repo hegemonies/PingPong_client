@@ -10,27 +10,24 @@ using System.Threading.Tasks;
 
 namespace PingPong_client {
     class Program {
-        static private int port_server = 7902;
+        static private int gamePortServer = 7902;
+        static private int chatPortServer = 7903;
         static private string ip_server = "127.0.0.1";
         static List<SessionInfo> sessions = new List<SessionInfo>();
-        //static Helper helper = new Helper();
         static void Main(string[] args) {
             Console.BackgroundColor = ConsoleColor.Black;
-            //Stopwatch sw = new Stopwatch();
-            //sw.Start();
             ConsoleSettings.Initial();
-            //sw.Stop();
-            //Console.SetCursorPosition(10, 10);
-            //Console.WriteLine((sw.ElapsedMilliseconds / 100.0).ToString());
-
-            //Console.ReadKey(true);
-            //return;
 
             try {
-                IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(ip_server), port_server);
+                IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(ip_server), gamePortServer);
                 Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                 serverSocket.Connect(ipPoint);
+
+                IPEndPoint chatIpPoint = new IPEndPoint(IPAddress.Parse(ip_server), chatPortServer);
+                Socket chatServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+                chatServerSocket.Connect(chatIpPoint);
 
                 string nickName = "";
                 do {
@@ -46,11 +43,6 @@ namespace PingPong_client {
                 NetworkStream stream = new NetworkStream(serverSocket);
                 byte[] sdata;
 
-                //sdata = Encoding.Default.GetBytes("CREATEGAME");
-                //stream.Write(sdata, 0, sdata.Length);
-
-                //Thread.Sleep(500);
-
                 Render.RenderRedWelcomeZone();
                 Helper.WriteAt("Getting a game list...", 39, 10);
 
@@ -59,16 +51,12 @@ namespace PingPong_client {
 
                 byte[] rdata = new byte[1150];
                 stream.Read(rdata, 0, 1150);
-
-                //Console.WriteLine(rdata);
-
+                
                 string str_rdata = Encoding.Default.GetString(rdata);
                 str_rdata = Helper.DeleteSpaces(str_rdata);
-                //Console.WriteLine("rdata: " + str_rdata + '.');
                 string[] req;
 
                 if (str_rdata == "BAD") {
-                    //Console.WriteLine("BAD");
                     Render.RenderRedWelcomeZone();
                     Console.SetCursorPosition(50, 20);
                     Console.Write("List is empty");
@@ -85,19 +73,17 @@ namespace PingPong_client {
                     sdata = Encoding.Default.GetBytes("CREATEGAME");
                     stream.Write(sdata, 0, sdata.Length);
                     Thread.Sleep(2000);
-                    //Render.RenderRedWelcomeZone();
                     Array.Clear(rdata, 0, rdata.Length);
                     serverSocket.Receive(rdata);
                     Render.RenderGame();
                     string nickOpponent = Encoding.Default.GetString(rdata);
                     nickOpponent = Helper.DeleteSpaces(nickOpponent);
                     Render.RenderStatisticZone(nickName, nickOpponent, 0, 0);
-                    var GR = new GameRules(serverSocket, StartPosition.Left);
-                    GR.Start();
+                    var GR = new GameRules(serverSocket, chatServerSocket, nickName, nickOpponent);
+                    GR.Start(StartPosition.Left);
                 } else {
                     string tmp = Encoding.Default.GetString(rdata);
                     tmp = Helper.DeleteSpaces(tmp);
-                    //Helper.WriteAt(tmp + ".", 0, 0);
                     req = tmp.Split(';');
 
                     if (req[0] == "BAD") {
@@ -126,14 +112,13 @@ namespace PingPong_client {
                         Console.BackgroundColor = ConsoleColor.DarkBlue;
                         Helper.WriteAt("Waiting opponent...", 30, 2);
                         Array.Clear(rdata, 0, rdata.Length);
-                        //stream.Read(rdata, 0, 20);
                         serverSocket.Receive(rdata);
                         Render.RenderGame();
                         string nickOpponent = Encoding.Default.GetString(rdata);
                         nickOpponent = Helper.DeleteSpaces(nickOpponent);
                         Render.RenderStatisticZone(nickName, nickOpponent, 0, 0);
-                        var GR = new GameRules(serverSocket, StartPosition.Left);
-                        GR.Start();
+                        var GR = new GameRules(serverSocket, chatServerSocket, nickName, nickOpponent);
+                        GR.Start(StartPosition.Left);
                         break;
                     } else if (answer == "-r") {
                         Array.Clear(sdata, 0, sdata.Length);
@@ -145,7 +130,6 @@ namespace PingPong_client {
 
                         str_rdata = Encoding.Default.GetString(rdata);
                         str_rdata = Helper.DeleteSpaces(str_rdata);
-                        //Console.WriteLine("rdata: " + str_rdata + '.');
 
                         req = Encoding.Default.GetString(rdata).Split(';');
                         ParseGameList(req);
@@ -169,18 +153,13 @@ namespace PingPong_client {
 
                             Render.RenderStatisticZone(nickOpponent, nickName, 0, 0);
 
-                            var GR = new GameRules(serverSocket, StartPosition.Right);
-                            GR.Start();
+                            var GR = new GameRules(serverSocket, chatServerSocket, nickName, nickOpponent);
+                            GR.Start(StartPosition.Right);
 
                             break;
                         }
                     }
                 }
-
-                //Thread.Sleep(2000);
-                //Array.Clear(sdata, 0, sdata.Length);
-                //sdata = Encoding.Default.GetBytes("GOGAME;" + sessions[1].GID.ToString());
-                //stream.Write(sdata, 0, sdata.Length);
 
                 stream.Close();
             } catch (Exception exc) {

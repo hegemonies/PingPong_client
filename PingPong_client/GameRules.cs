@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 namespace PingPong_client {
     class GameRules {
         Socket serverSocket;
+        Socket chatSocket;
         byte[] sendBuffer = new byte[2];
         byte[] recvBuffer = new byte[22];
         int interval = 400;
@@ -27,14 +28,20 @@ namespace PingPong_client {
         bool runGame = true;
         int time = 0;
         SoundPlayer sound = new SoundPlayer(@"scream.wav");
+        Chat chat = new Chat();
+        string selfNick;
+        string opponentNick;
 
-        public GameRules(Socket serverSocket, StartPosition startPosition) {
+        public GameRules(Socket serverSocket, Socket chatSocket, string selfNick, string opponentNick) {
             this.serverSocket = serverSocket;
-            this.startPosition = startPosition;
+            this.chatSocket = chatSocket;
+            this.selfNick = selfNick;
+            this.opponentNick = opponentNick;
             sound.Load();
         }
 
-        public void Start() {
+        public void Start(StartPosition startPosition) {
+            this.startPosition = startPosition;
             Render.RenderStartPosion();
 
             NetworkStream stream = new NetworkStream(serverSocket);
@@ -43,11 +50,11 @@ namespace PingPong_client {
 
             sendBuffer = Encoding.Default.GetBytes("READY");
             stream.Write(sendBuffer, 0, sendBuffer.Length);
-            
+
             stream.Read(recvBuffer, 0, 5);
             answer = Encoding.Default.GetString(recvBuffer);
             answer = Helper.DeleteSpaces(answer);
-            
+
             Thread.Sleep(2000);
 
             stream.Close();
@@ -57,31 +64,26 @@ namespace PingPong_client {
             } else if (answer == "START") {
                 new Thread(StartSend).Start();
                 new Thread(StartReceive).Start();
+                new Thread(ChatHandler).Start();
                 PlayHandler();
             }
         }
-
         private void PlayHandler() {
             Mutex mutex = new Mutex();
             Render.RenderStatisticInfo("Start");
+            string message = "";
             while (runGame) {
-                //if (scoreLeft < 5 && scoreRight < 5) {
-                //    break;
-                //}
-
                 ConsoleKey key = Console.ReadKey(true).Key;
 
                 if (key == ConsoleKey.DownArrow) {
                     if (startPosition == StartPosition.Left) {
                         if (posLeftRacket < 22) {
-                            //oldPosLeftRacket = posLeftRacket;
                             mutex.WaitOne();
                             posLeftRacket++;
                             mutex.ReleaseMutex();
                         }
                     } else {
                         if (posRightRacket < 23) {
-                            //oldPosRightRacket = posRightRacket;
                             mutex.WaitOne();
                             posRightRacket++;
                             mutex.ReleaseMutex();
@@ -90,23 +92,41 @@ namespace PingPong_client {
                 } else if (key == ConsoleKey.UpArrow) {
                     if (startPosition == StartPosition.Left) {
                         if (posLeftRacket > 1) {
-                            //oldPosLeftRacket = posLeftRacket;
                             mutex.WaitOne();
                             posLeftRacket--;
                             mutex.ReleaseMutex();
                         }
                     } else {
                         if (posRightRacket > 1) {
-                            //oldPosRightRacket = posRightRacket;
                             mutex.WaitOne();
                             posRightRacket--;
                             mutex.ReleaseMutex();
                         }
                     }
+                } else if (isChar(key)) {
+                    if (message.Length < 60) {
+                        message += key.ToString();
+                        Render.RenderSendMessage(key);
+                    }
+                } else if (key == ConsoleKey.Spacebar) {
+                    if (message.Length < 60) {
+                        message += " ";
+                        Render.RenderSendMessage(" ");
+                    }
+                } else if (key == ConsoleKey.Enter) {
+                    if (message.Length > 0) {
+                        chat.AddMsg(selfNick, message);
+                        chatSocket.Send(Encoding.Default.GetBytes(message));
+                        message = "";
+                        Render.RenderEnter();
+                        Render.RenderChat(chat);
+                    }
+                } else if (key == ConsoleKey.Backspace) {
+                    if (message.Length > 1) {
+                        message = message.Substring(0, message.Length - 1);
+                        Render.RenderBackspace();
+                    }
                 }
-                //Thread.Sleep(interval);
-
-                //Render.RenderGame(posLeftRacket, posRightRacket, posBall);                
             }
 
             if (scoreLeft == 5) {
@@ -116,8 +136,7 @@ namespace PingPong_client {
             }
             Render.RenderStatisticInfo("Finish the game");
         }
-
-        public void StartSend() {
+        private void StartSend() {
             while (true) {
                 try {
                     Thread.Sleep(interval);
@@ -132,26 +151,24 @@ namespace PingPong_client {
                 }
             }
         }
-        public void StartReceive() {
-            //int spec_interval = interval + 200;
+        private void StartReceive() {
             int spec_interval = 0;
-            long elapsedTimeToStringParse = 0;
+            //long elapsedTimeToStringParse = 0;
 
             while (true) {
                 try {
-                    //Thread.Sleep(spec_interval - (int)elapsedTimeToStringParse);
                     Thread.Sleep(spec_interval);
                     serverSocket.Receive(recvBuffer);
 
-                    Stopwatch sw = new Stopwatch();
-                    sw.Start();
+                    //Stopwatch sw = new Stopwatch();
+                    //sw.Start();
 
                     string raw = Encoding.Default.GetString(recvBuffer);
-                    //Helper.WriteAt(raw, 0, 35);
+
                     raw = Helper.DeleteSpaces(raw);
                     string[] raws = raw.Split(';');
                     act = raws[0];
-                    
+
                     if (act == "ACTION") {
                         string sub_action = raws[1];
                         if (sub_action == "LOSE") {
@@ -170,20 +187,18 @@ namespace PingPong_client {
                             runGame = false;
                         }
                     } else if (act == "MOTION") {
-                        oldPosLeftRacket = posLeftRacket;
-                        oldPosRightRacket = posRightRacket;
-                        
+
                         if (startPosition == StartPosition.Left) {
-                            //posRightRacket = int.Parse(raws[2]);
                             int tmp = int.Parse(raws[2]);
                             if (tmp < 24 && tmp >= 0) {
                                 posRightRacket = tmp;
+                                oldPosRightRacket = posRightRacket;
                             }
                         } else {
-                            //posLeftRacket = int.Parse(raws[1]);
                             int tmp = int.Parse(raws[1]);
                             if (tmp < 24 && tmp >= 0) {
-                                posLeftRacket = int.Parse(raws[1]);
+                                posLeftRacket = tmp;
+                                oldPosLeftRacket = posLeftRacket;
                             }
                         }
 
@@ -209,8 +224,8 @@ namespace PingPong_client {
                         //Console.WriteLine("Pos ball: " + posBall[0] + " " + posBall[1] + ".");
                     }
 
-                    sw.Stop();
-                    elapsedTimeToStringParse = sw.ElapsedMilliseconds / 100;
+                    //sw.Stop();
+                    //elapsedTimeToStringParse = sw.ElapsedMilliseconds / 100;
 
                     //Render.RenderGame(posLeftRacket, posRightRacket, posBall);
                     Render.FastRenderGame(posLeftRacket, posRightRacket, posBall, oldPosLeftRacket, oldPosRightRacket, oldPosBall);
@@ -220,6 +235,50 @@ namespace PingPong_client {
                 } catch {
 
                 }
+            }
+        }
+        private bool isChar(ConsoleKey key) {
+            if (key == ConsoleKey.A ||
+                key == ConsoleKey.B ||
+                key == ConsoleKey.C ||
+                key == ConsoleKey.D ||
+                key == ConsoleKey.E ||
+                key == ConsoleKey.F ||
+                key == ConsoleKey.G ||
+                key == ConsoleKey.H ||
+                key == ConsoleKey.I ||
+                key == ConsoleKey.J ||
+                key == ConsoleKey.K ||
+                key == ConsoleKey.L ||
+                key == ConsoleKey.M ||
+                key == ConsoleKey.N ||
+                key == ConsoleKey.O ||
+                key == ConsoleKey.P ||
+                key == ConsoleKey.Q ||
+                key == ConsoleKey.R ||
+                key == ConsoleKey.S ||
+                key == ConsoleKey.T ||
+                key == ConsoleKey.U ||
+                key == ConsoleKey.V ||
+                key == ConsoleKey.W ||
+                key == ConsoleKey.X ||
+                key == ConsoleKey.Y ||
+                key == ConsoleKey.Z) {
+                return true;
+            }
+
+            return false;
+        }
+        private void ChatHandler() {
+            int sizeChatMessage = 100;
+            byte[] chatBuffer = new byte[sizeChatMessage];
+            while (runGame) {
+                try {
+                    Array.Clear(chatBuffer, 0, sizeChatMessage);
+                    chatSocket.Receive(chatBuffer);
+                    chat.AddMsg(opponentNick, Encoding.Default.GetString(chatBuffer));
+                    Render.RenderChat(chat);
+                } catch { }
             }
         }
     }

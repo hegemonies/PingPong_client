@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PingPong_client {
@@ -21,8 +22,11 @@ namespace PingPong_client {
         }
         public static void WriteAt(string s, int x, int y) {
             try {
+                Mutex mutex = new Mutex();
+                mutex.WaitOne();
                 Console.SetCursorPosition(origCol + x, origRow + y);
                 Console.Write(s);
+                mutex.ReleaseMutex();
             } catch (ArgumentOutOfRangeException e) {
                 //Console.Clear();
                 //Console.WriteLine(e.Message);

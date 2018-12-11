@@ -11,6 +11,8 @@ namespace PingPong_client {
         private static int offsetLeft = 3;
         private static int offsetTop = 1;
         private static int countInfo = 0;
+
+        private static int countChars = 0;
         public static void ShowList(List<SessionInfo> sessions) {
             RenderRedWelcomeZone();
             if (sessions.Count == 0) {
@@ -45,7 +47,6 @@ namespace PingPong_client {
                 Console.Write(session.status);
             }
         }
-
         public static void RenderWelcomeZone() {
             RenderBlueWelcomeZone();
             RenderRedWelcomeZone();
@@ -136,7 +137,7 @@ namespace PingPong_client {
         public static void RenderGame(int posLeftRacket, int posRightRacket, int[] posBall) {
             Console.BackgroundColor = ConsoleColor.DarkBlue;
             Console.ForegroundColor = ConsoleColor.White;
-            
+
             for (int i = Helper.origRow; i < ConsoleSettings.heightGame - 1; i++) {
                 Console.SetCursorPosition(Helper.origCol, i);
                 for (int j = Helper.origCol; j < ConsoleSettings.widthGame; j++) {
@@ -152,11 +153,10 @@ namespace PingPong_client {
             Console.BackgroundColor = ConsoleColor.DarkBlue;
             Console.ForegroundColor = ConsoleColor.White;
 
-            Console.SetCursorPosition(0, 0);
             for (int i = 0; i < ConsoleSettings.heightGame - 1; i++) {
-                Console.WriteLine(" ");
+                Helper.WriteAt(" ", 0, i);
             }
-            
+
             for (int i = 0; i < ConsoleSettings.heightGame - 1; i++) {
                 Helper.WriteAt(" ", 59, i);
             }
@@ -219,6 +219,41 @@ namespace PingPong_client {
             Console.BackgroundColor = ConsoleColor.Blue;
             Console.ForegroundColor = ConsoleColor.White;
             Helper.WriteAt(time.ToString(), 79, 0);
+        }
+        public static void RenderSendMessage(ConsoleKey key) {
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            string ch = key.ToString();
+            Helper.WriteAt(ch, countChars, 39);
+            countChars++;
+        }
+        public static void RenderSendMessage(string msg) {
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Helper.WriteAt(msg, countChars, 39);
+            countChars++;
+        }
+        public static void RenderBackspace() {
+            if (countChars > 1) {
+                Console.BackgroundColor = ConsoleColor.DarkBlue;
+                countChars--;
+                Helper.WriteAt(" ", countChars, 39);
+            }
+        }
+        public static void RenderEnter() {
+            string bspaces = "\t\t\t\t\t\t\t\t\t";
+
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Helper.WriteAt(bspaces, 0, 39);
+            countChars = 0;
+        }
+        public static void RenderChat(Chat chat) {
+            string[] strs = chat.toStrings();
+            Console.BackgroundColor = ConsoleColor.DarkCyan;
+
+            int i = 0;
+            foreach (string str in strs) {
+                Helper.WriteAt(str, 0, i + 24);
+                i++;
+            }
         }
     }
 }
