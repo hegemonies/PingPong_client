@@ -85,21 +85,17 @@ namespace PingPong_client {
                 Console.SetCursorPosition(Helper.origCol, i);
                 for (int j = Helper.origCol; j < ConsoleSettings.widthGame; j++) {
                     Console.Write(" ");
-                    //Helper.WriteAt(" ", j, i);
                 }
             }
 
             Console.BackgroundColor = ConsoleColor.Blue;
-            // Filling the statistic area
             for (int i = Helper.origRow; i < ConsoleSettings.heightStatistics; i++) {
                 Console.SetCursorPosition(ConsoleSettings.widthGame, i);
                 for (int j = ConsoleSettings.widthGame; j < ConsoleSettings.widthStatistics; j++) {
                     if (j == ConsoleSettings.widthGame) {
-                        //Helper.WriteAt("|", j, i);
                         Console.Write("|");
                         continue;
                     }
-                    //Helper.WriteAt(" ", j, i);
                     Console.Write(" ");
                 }
             }
@@ -112,11 +108,9 @@ namespace PingPong_client {
                 for (int j = Helper.origCol; j < ConsoleSettings.widthChat; j++) {
                     if (i == ConsoleSettings.heightGame) {
                         Console.Write("-");
-                        //Helper.WriteAt("-", j, i);
                         continue;
                     }
                     Console.Write(" ");
-                    //Helper.WriteAt(" ", j, i);
                 }
             }
 
@@ -126,7 +120,6 @@ namespace PingPong_client {
             for (int i = ConsoleSettings.heightConsole - 1; i < ConsoleSettings.heightConsole; i++) {
                 for (int j = Helper.origCol; j < ConsoleSettings.widthConsole; j++) {
                     if (i == ConsoleSettings.heightConsole - 1) {
-                        //Console.Write("-");
                         Helper.WriteAt("-", j, i);
                         continue;
                     }
@@ -178,16 +171,21 @@ namespace PingPong_client {
             }
 
             Helper.WriteAt(leftName, ConsoleSettings.widthGame + 2, 2);
-            Helper.WriteAt("-", 79, 2);
+            //Helper.WriteAt("-", 79, 2);
+            for (int i = 1; i < 6; i++) {
+                Helper.WriteAt("|", 79, i);
+            }
             Helper.WriteAt(rightName, ConsoleSettings.widthGame + 22, 2);
 
             Helper.WriteAt(pointLeft.ToString(), 69, 5);
             Helper.WriteAt(pointRight.ToString(), 89, 5);
+
+            Helper.WriteAt("---------------------------------------", 61, 6);
         }
         public static void RenderStatistic(int pointLeft, int pointRight) {
             Console.BackgroundColor = ConsoleColor.Blue;
             Console.ForegroundColor = ConsoleColor.White;
-            Helper.WriteAt("\t\t\t\t\t", 62, 5);
+            Helper.WriteAt("\t\t\t\t\t\t\t\t", 62, 5);
             Helper.WriteAt(pointLeft.ToString(), 69, 5);
             Helper.WriteAt(pointRight.ToString(), 89, 5);
         }
@@ -218,7 +216,7 @@ namespace PingPong_client {
         public static void RenderTime(int time) {
             Console.BackgroundColor = ConsoleColor.Blue;
             Console.ForegroundColor = ConsoleColor.White;
-            Helper.WriteAt(time.ToString(), 79, 0);
+            Helper.WriteAt(time.ToString(), 78, 0);
         }
         public static void RenderSendMessage(ConsoleKey key) {
             Console.BackgroundColor = ConsoleColor.DarkBlue;
@@ -251,6 +249,7 @@ namespace PingPong_client {
 
             int i = 0;
             foreach (string str in strs) {
+                Helper.WriteAt("\t\t\t\t\t\t\t\t\t", 0, i + 24);
                 Helper.WriteAt(str, 0, i + 24);
                 i++;
             }

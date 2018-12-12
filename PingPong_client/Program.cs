@@ -170,6 +170,7 @@ namespace PingPong_client {
             Console.BackgroundColor = ConsoleColor.Red;
             Helper.WriteAt("Enter any key to exit", 50, 20);
             Console.ReadKey(true);
+            Environment.Exit(0);
         }
         private static void ParseGameList(string[] strs) {
             foreach (string str in strs) {

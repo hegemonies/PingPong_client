@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace PingPong_client {
     class Chat {
-        Dictionary<int, ClientChatWraper> messages = new Dictionary<int, ClientChatWraper>();
+        Dictionary<int, ClientChatWrapper> messages = new Dictionary<int, ClientChatWrapper>();
         int count = 0;
         public void AddMsg(string from, string msg) {
-            messages.Add(count, new ClientChatWraper(from, msg));
+            messages.Add(count, new ClientChatWrapper(from, msg));
             count++;
         }
         public string[] toStrings() {

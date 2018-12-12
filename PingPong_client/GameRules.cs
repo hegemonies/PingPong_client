@@ -31,6 +31,8 @@ namespace PingPong_client {
         Chat chat = new Chat();
         string selfNick;
         string opponentNick;
+        Stopwatch sw = new Stopwatch();
+        bool restartTimer = false;
 
         public GameRules(Socket serverSocket, Socket chatSocket, string selfNick, string opponentNick) {
             this.serverSocket = serverSocket;
@@ -62,6 +64,7 @@ namespace PingPong_client {
             if (answer == "BAD") {
                 Render.RenderError("BAD");
             } else if (answer == "START") {
+                new Thread(TimerHandler).Start();
                 new Thread(StartSend).Start();
                 new Thread(StartReceive).Start();
                 new Thread(ChatHandler).Start();
@@ -106,25 +109,33 @@ namespace PingPong_client {
                 } else if (isChar(key)) {
                     if (message.Length < 60) {
                         message += key.ToString();
+                        mutex.WaitOne();
                         Render.RenderSendMessage(key);
+                        mutex.ReleaseMutex();
                     }
                 } else if (key == ConsoleKey.Spacebar) {
                     if (message.Length < 60) {
                         message += " ";
+                        mutex.WaitOne();
                         Render.RenderSendMessage(" ");
+                        mutex.ReleaseMutex();
                     }
                 } else if (key == ConsoleKey.Enter) {
                     if (message.Length > 0) {
                         chat.AddMsg(selfNick, message);
                         chatSocket.Send(Encoding.Default.GetBytes(message));
                         message = "";
+                        mutex.WaitOne();
                         Render.RenderEnter();
                         Render.RenderChat(chat);
+                        mutex.ReleaseMutex();
                     }
                 } else if (key == ConsoleKey.Backspace) {
                     if (message.Length > 1) {
                         message = message.Substring(0, message.Length - 1);
+                        mutex.WaitOne();
                         Render.RenderBackspace();
+                        mutex.ReleaseMutex();
                     }
                 }
             }
@@ -151,17 +162,43 @@ namespace PingPong_client {
                 }
             }
         }
-        private void StartReceive() {
-            int spec_interval = 0;
-            //long elapsedTimeToStringParse = 0;
+        double passedTime;
+        private void TimerHandler() {
+            sw.Start();
+            Mutex mutex = new Mutex();
 
             while (true) {
+                passedTime = sw.ElapsedMilliseconds / 1000;
+                //mutex.WaitOne();
+                //Helper.WriteAt(passedTime.ToString(), 65, 15);
+                //mutex.ReleaseMutex();
+                if (restartTimer) {
+                    sw.Start();
+                    restartTimer = false;
+                } else if (passedTime > 3) {
+                    Render.RenderError("Second player not responding");
+                    runGame = false;
+                    break;
+                }
+                Thread.Sleep(50);
+            }
+
+            sw.Stop();
+        }
+        private void StartReceive() {
+            int spec_interval = 0;
+
+            Mutex mutex = new Mutex();
+
+            while (runGame) {
                 try {
                     Thread.Sleep(spec_interval);
                     serverSocket.Receive(recvBuffer);
 
-                    //Stopwatch sw = new Stopwatch();
-                    //sw.Start();
+                    mutex.WaitOne();
+                    //restartTimer = true;
+                    sw.Restart();
+                    mutex.ReleaseMutex();
 
                     string raw = Encoding.Default.GetString(recvBuffer);
 
@@ -217,20 +254,17 @@ namespace PingPong_client {
                         string[] strScores = raws[4].Split(',');
                         scoreLeft = int.Parse(strScores[0]);
                         scoreRight = int.Parse(strScores[1]);
-
-                        //Console.SetCursorPosition(0, 25);
-                        //Console.WriteLine("Pos left: " + posLeftRacket + ".");
-                        //Console.WriteLine("Pos right: " + posRightRacket + ".");
-                        //Console.WriteLine("Pos ball: " + posBall[0] + " " + posBall[1] + ".");
                     }
 
-                    //sw.Stop();
-                    //elapsedTimeToStringParse = sw.ElapsedMilliseconds / 100;
+                    //Mutex mutex = new Mutex();
+                    mutex.WaitOne();
 
-                    //Render.RenderGame(posLeftRacket, posRightRacket, posBall);
                     Render.FastRenderGame(posLeftRacket, posRightRacket, posBall, oldPosLeftRacket, oldPosRightRacket, oldPosBall);
                     Render.RenderStatistic(scoreLeft, scoreRight);
                     Render.RenderTime(time);
+
+                    mutex.ReleaseMutex();
+
                     time++;
                 } catch {
 

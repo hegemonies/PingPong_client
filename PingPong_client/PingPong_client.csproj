@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chat.cs" />
+    <Compile Include="ClientChatWrapper.cs" />
     <Compile Include="ConsoleSettings.cs" />
     <Compile Include="GameRules.cs" />
     <Compile Include="Helper.cs" />
